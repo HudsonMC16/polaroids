@@ -76,7 +76,7 @@ def generate_stubs(
     class_name: str,
     file_path: Union[Path, str] = 'polaroids.py',
     lowercase: bool = False,
-) -> Union[pl.DataFrame, pl.LazyFrame]:
+) -> tuple[Union[pl.DataFrame, pl.LazyFrame], dict[str, str]]:
     """Generate stubs for polars dataframe schema for IDE autocompletion.
 
     Also cleans column names to valid python identifiers returns original object with
@@ -112,8 +112,11 @@ def generate_stubs(
             safe_col_name = safe_col_name.lower()
         if safe_col_name != col_name:
             rename_mapping[col_name] = safe_col_name
-
-        lines.append(f'    {safe_col_name}: pl.Expr # dtype: {dtype}')
+            lines.append(
+                f'{safe_col_name}: pl.Expr # dtype: {dtype}, original name:{col_name}'
+            )
+        else:
+            lines.append(f'    {safe_col_name}: pl.Expr # dtype: {dtype}')
 
     lines.extend(
         [
@@ -152,4 +155,4 @@ def generate_stubs(
             print(f"    '{old}' -> '{new}'")
         df = df.rename(rename_mapping)
 
-    return df
+    return df, rename_mapping
