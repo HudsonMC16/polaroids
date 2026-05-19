@@ -113,17 +113,31 @@ def generate_stubs(
             safe_col_name = safe_col_name.lower()
         if safe_col_name != col_name:
             rename_mapping[col_name] = safe_col_name
-            lines.append(f'    {safe_col_name}: pl.Expr')
-            lines.append(f'    """dtype: {dtype}, original name:{col_name}"""')
+            lines.extend(
+                [
+                    '    @property',
+                    f'    def {safe_col_name}(self) -> pl.Expr:',
+                    f'        """dtype: {dtype}, original name:{col_name}"""',
+                    '        ...',
+                ]
+            )
         else:
-            lines.append(f'    {safe_col_name}: pl.Expr')
-            lines.append(f'    """dtype: {dtype}"""')
+            lines.extend(
+                [
+                    '    @property',
+                    f'    def {safe_col_name}(self) -> pl.Expr:',
+                    f'        """dtype: {dtype}"""',
+                    '        ...',
+                ]
+            )
 
     lines.extend(
         [
             '',
             f'class {class_name}(pl.DataFrame):',
-            f'    c: _{class_name}_cols',
+            '    @property',
+            f'    def c(self) -> _{class_name}_cols:',
+            '        ...',
             f'# --- END {class_name} ---',
         ]
     )
