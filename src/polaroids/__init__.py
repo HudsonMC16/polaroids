@@ -113,7 +113,7 @@ def generate_stubs(
         if safe_col_name != col_name:
             rename_mapping[col_name] = safe_col_name
             lines.append(
-                f'{safe_col_name}: pl.Expr # dtype: {dtype}, original name:{col_name}'
+                f'    {safe_col_name}: pl.Expr # dtype: {dtype}, original name:{col_name}'
             )
         else:
             lines.append(f'    {safe_col_name}: pl.Expr # dtype: {dtype}')
