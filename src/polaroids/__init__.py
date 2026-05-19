@@ -74,7 +74,7 @@ class LazyColumnAccessor:
 def generate_stubs(
     df: Union[pl.DataFrame, pl.LazyFrame],
     class_name: str,
-    file_path: Union[Path, str] = 'polaroids.py',
+    file_path: Union[Path, str] = 'polaroids_stubs.py',
     lowercase: bool = False,
 ) -> tuple[Union[pl.DataFrame, pl.LazyFrame], dict[str, str]]:
     """Generate stubs for polars dataframe schema for IDE autocompletion.
@@ -87,7 +87,8 @@ def generate_stubs(
             to generate stubs
         class_name (str): name of class in generated stub files. Should also be used in
             code as type hint for dataframes with these columns
-        file_path (Union[Path, str]):path to write stub file. Defaults to "polaroids.py"
+        file_path (Union[Path, str]):path to write stub file. Defaults to
+            "polaroids_stubs.py"
         lowercase (bool): will lowercase columns names when transforming to valid python
             identifiers. Defaults to False
 

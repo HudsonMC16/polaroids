@@ -14,11 +14,11 @@ from polaroids import generate_stubs
 raw_df = pl.read_csv('MyData.csv')
 
 # Generate stubs and get data frame with cleaned names and the mapping of renamed columns
-clean_df, rename_mapping = generate_stubs(df, class_name='MyData') # file_path defaults to polaroids.py in same directory
+clean_df, rename_mapping = generate_stubs(df, class_name='MyData') # file_path defaults to polaroids_stubs.py in same directory
 
 # import stubs, but protect the import with a try/except block for the first time this code is run
 try:
-    from polaroids import MyData, ExtendedMyData
+    from polaroids_stubs import MyData, ExtendedMyData
 except ImportError:
     MyData = ExtendedMyData = pl.DataFrame
 
