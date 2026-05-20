@@ -95,12 +95,16 @@ def generate_stubs(
     Returns:
         Union[pl.DataFrame, pl.LazyFrame]: Original dataframe/lazyframe with the columns
             renamed to valid python identifiers
+        dict[str, str]: dictionary containing the mapping of original column names to
+            the modified (cleaned) names. Has format `original: new`
     """
     schema = df.schema
 
-    lines = [f'# --- START {class_name} ---', f'class _{class_name}_cols:']
-
+    lines = [f'# --- START {class_name} ---']
     rename_mapping = {}
+    all_col_names = set()
+    col_classes = []
+    col_attributes = [f'class {class_name}Cols:']
     for col_name, dtype in schema.items():
         safe_col_name = re.sub(r'[^0-9a-zA-Z_]', '_', col_name)
         safe_col_name = re.sub(r'_+', '_', safe_col_name).strip('_')
@@ -111,6 +115,13 @@ def generate_stubs(
             safe_col_name = f'_{safe_col_name}'
         if lowercase:
             safe_col_name = safe_col_name.lower()
+
+        suffix = 1
+        original = safe_col_name
+        while safe_col_name in all_col_names:
+            safe_col_name = f'{original}_{suffix}'
+            suffix += 1
+
         if safe_col_name != col_name:
             rename_mapping[col_name] = safe_col_name
             lines.append(
