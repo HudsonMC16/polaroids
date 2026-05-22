@@ -43,6 +43,12 @@ extended_df = cast(ExtendedMyData, extended_df)
 # polars datatype and original column name if it was changed.
 filtered_df: MyData = df.filter(df.c.col_a > 5, df.c.col_b <= 100)
 
+# Also provides a "s" accessor for the column names as strings for use in libraries
+# which expect such things, like plotly for plotting:
+import plotly.express as px
+
+px.line(df, x=df.s.col_a, y=df.s.col_b, color=df.s.col_c).show()
+
 ```
 
 Things to be aware of when using columns from the returned data frame:
