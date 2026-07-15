@@ -1,5 +1,4 @@
 # Polaroids
-## Package is UNTESTED right now. Waiting on an opportunity to try it out
 
 Allows one to easily generate stub files containing column names and data types for polars dataframes and lazyframes so that users get IDE autocompletion for column names. Also cleans column names to make them valid python identifiers.
 
