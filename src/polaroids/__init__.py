@@ -68,7 +68,7 @@ class LazyColumnAccessor:
         Returns:
             list[str]: list of column names in lazyframe
         """
-        return self._df.columns
+        return self._df.collect_schema().names()
 
 
 @pl.api.register_dataframe_namespace('s')
@@ -132,7 +132,7 @@ class LazyColumnStringAccessor:
         Returns:
             list[str]: list of column names in lazyframe
         """
-        return self._df.columns
+        return self._df.collect_schema().names()
 
 
 def generate_stubs(
@@ -162,7 +162,7 @@ def generate_stubs(
         dict[str, str]: dictionary containing the mapping of original column names to
             the modified (cleaned) names. Has format `original: new`
     """
-    schema = df.schema
+    schema = df.schema if isinstance(df, pl.DataFrame) else df.collect_schema()
 
     lines = [f'# --- START {class_name} ---']
     rename_mapping = {}
