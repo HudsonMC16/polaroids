@@ -1,11 +1,18 @@
-"""Small package to generated clean type stubs for polars dataframe columns."""
+"""Small package to generate clean type stubs for polars dataframe columns."""
 
 import keyword
 import re
 from pathlib import Path
-from typing import Union
 
 import polars as pl
+
+__all__ = [
+    'ColumnAccessor',
+    'LazyColumnAccessor',
+    'ColumnStringAccessor',
+    'LazyColumnStringAccessor',
+    'generate_stubs',
+]
 
 
 @pl.api.register_dataframe_namespace('c')
@@ -137,30 +144,29 @@ class LazyColumnStringAccessor:
 
 
 def generate_stubs(
-    df: Union[pl.DataFrame, pl.LazyFrame],
+    df: pl.DataFrame | pl.LazyFrame,
     class_name: str,
-    file_path: Union[Path, str] = 'polaroids_stubs.py',
+    file_path: Path | str = 'polaroids_stubs.py',
     lowercase: bool = False,
-) -> tuple[Union[pl.DataFrame, pl.LazyFrame], dict[str, str]]:
+) -> tuple[pl.DataFrame | pl.LazyFrame, dict[str, str]]:
     """Generate stubs for polars dataframe schema for IDE autocompletion.
 
-    Also cleans column names to valid python identifiers returns original object with
+    Also cleans column names to valid python identifiers and returns original object with
     updated column names
 
     Args:
-        df (Union[pl.DataFrame, pl.LazyFrame]): Polars dataframe or lazyframe from which
+        df (pl.DataFrame | pl.LazyFrame): Polars dataframe or lazyframe from which
             to generate stubs
         class_name (str): name of class in generated stub files. Should also be used in
             code as type hint for dataframes with these columns
-        file_path (Union[Path, str]):path to write stub file. Defaults to
+        file_path (Path | str): path to write stub file. Defaults to
             "polaroids_stubs.py"
-        lowercase (bool): will lowercase columns names when transforming to valid python
+        lowercase (bool): will lowercase column names when transforming to valid python
             identifiers. Defaults to False
 
     Returns:
-        Union[pl.DataFrame, pl.LazyFrame]: Original dataframe/lazyframe with the columns
-            renamed to valid python identifiers
-        dict[str, str]: dictionary containing the mapping of original column names to
+        tuple[pl.DataFrame | pl.LazyFrame, dict[str, str]]: Original dataframe/lazyframe with the columns
+            renamed to valid python identifiers, and dictionary containing the mapping of original column names to
             the modified (cleaned) names. Has format `original: new`
     """
     schema = df.schema if isinstance(df, pl.DataFrame) else df.collect_schema()
