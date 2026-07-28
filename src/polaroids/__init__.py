@@ -1,5 +1,6 @@
 """Small package to generated clean type stubs for polars dataframe columns."""
 
+import keyword
 import re
 from pathlib import Path
 from typing import Union
@@ -180,6 +181,8 @@ def generate_stubs(
             safe_col_name = f'_{safe_col_name}'
         if lowercase:
             safe_col_name = safe_col_name.lower()
+        if keyword.iskeyword(safe_col_name):
+            safe_col_name = f'{safe_col_name}_'
 
         suffix = 1
         original = safe_col_name

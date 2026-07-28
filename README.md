@@ -55,6 +55,8 @@ Things to be aware of when using columns from the returned data frame:
 2. Columns with empty strings as names (which is valid in Polars, it turns out) will be
    renamed as "\_empty\_"
 3. Column names which begin with a digit will be prefixed with an underscore
+4. Column names matching Python reserved keywords (e.g. `class`, `import`, `def`) will be suffixed with an underscore (e.g. `class_`, `import_`, `def_`) to prevent invalid Python syntax in generated stubs.
+
 
 If the original column names are critical for plotting or other downstream applications,
 databases, or processes, the user can rename the dataframe back to the original names

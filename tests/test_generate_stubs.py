@@ -119,3 +119,22 @@ def test_lazyframe_support(sample_lazy_df: pl.LazyFrame, tmp_path: Path):
     assert isinstance(renamed_lazy, pl.LazyFrame)
     assert "col b" in mapping
     assert renamed_lazy.collect_schema().names() == ["col_a", "col_b", "_123_num", "_empty_"]
+
+
+def test_reserved_keywords_sanitization(tmp_path: Path):
+    stub_file = tmp_path / "stubs.py"
+    df = pl.DataFrame({
+        "class": [1],
+        "import": [2],
+        "def": [3],
+        "FOR": [4],
+    })
+
+    renamed_df, mapping = generate_stubs(df, "KwData", file_path=stub_file, lowercase=True)
+
+    assert mapping["class"] == "class_"
+    assert mapping["import"] == "import_"
+    assert mapping["def"] == "def_"
+    assert mapping["FOR"] == "for_"
+    assert renamed_df.columns == ["class_", "import_", "def_", "for_"]
+
