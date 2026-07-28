@@ -8,8 +8,8 @@ import polars as pl
 
 __all__ = [
     'ColumnAccessor',
-    'LazyColumnAccessor',
     'ColumnStringAccessor',
+    'LazyColumnAccessor',
     'LazyColumnStringAccessor',
     'generate_stubs',
 ]
@@ -151,8 +151,8 @@ def generate_stubs(
 ) -> tuple[pl.DataFrame | pl.LazyFrame, dict[str, str]]:
     """Generate stubs for polars dataframe schema for IDE autocompletion.
 
-    Also cleans column names to valid python identifiers and returns original object with
-    updated column names
+    Also cleans column names to valid python identifiers and returns original object
+    with updated column names
 
     Args:
         df (pl.DataFrame | pl.LazyFrame): Polars dataframe or lazyframe from which
@@ -165,9 +165,10 @@ def generate_stubs(
             identifiers. Defaults to False
 
     Returns:
-        tuple[pl.DataFrame | pl.LazyFrame, dict[str, str]]: Original dataframe/lazyframe with the columns
-            renamed to valid python identifiers, and dictionary containing the mapping of original column names to
-            the modified (cleaned) names. Has format `original: new`
+        tuple[pl.DataFrame | pl.LazyFrame, dict[str, str]]: Original dataframe/lazyframe
+            with the columns renamed to valid python identifiers, and dictionary
+            containing the mapping of original column names to the modified (cleaned)
+            names. Has format `original: new`
     """
     schema = df.schema if isinstance(df, pl.DataFrame) else df.collect_schema()
 
