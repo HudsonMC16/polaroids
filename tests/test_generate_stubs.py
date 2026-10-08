@@ -22,11 +22,20 @@ def test_generate_stubs_basic(sample_df: pl.DataFrame, tmp_path: Path):
     assert '# --- START MyData ---' in content
     assert '# --- END MyData ---' in content
     assert 'class MyData(pl.DataFrame):' in content
-    assert 'class MyDataCols:' in content
-    assert 'class MyDataStrCols:' in content
-    assert 'col_b: MyData_col_b' in content
-    assert '_123_num: MyData__123_num' in content
-    assert '_empty_: MyData__empty_' in content
+    assert 'class MyDataExprCols:' in content
+    assert 'class MyDataNameCols:' in content
+    assert 'class MyDataSeriesCols:' in content
+    assert 'col_b: MyData_col_b_Expr' in content
+    assert 'col_b: MyData_col_b_Name' in content
+    assert 'col_b: MyData_col_b_Series' in content
+    assert '_123_num: MyData__123_num_Expr' in content
+    assert '_empty_: MyData__empty__Expr' in content
+    assert 'def x(self) -> MyDataExprCols:' in content
+    assert 'def n(self) -> MyDataNameCols:' in content
+    assert 'def s(self) -> MyDataSeriesCols:' in content
+
+    # Ensure generated stub is valid Python code
+    compile(content, str(stub_file), 'exec')
 
 
 def test_column_sanitization_edge_cases(tmp_path: Path):
@@ -54,6 +63,9 @@ def test_column_sanitization_edge_cases(tmp_path: Path):
         '_empty_',
         'uppercase',
     ]
+
+    content = stub_file.read_text(encoding='utf-8')
+    compile(content, str(stub_file), 'exec')
 
 
 def test_name_collision_deduplication(tmp_path: Path):
@@ -85,6 +97,21 @@ def test_single_quote_docstring_escaping(tmp_path: Path):
 
     content = stub_file.read_text(encoding='utf-8')
     assert "user\\'s_column" in content
+    compile(content, str(stub_file), 'exec')
+
+
+def test_double_quote_and_backslash_escaping(tmp_path: Path):
+    stub_file = tmp_path / 'stubs.py'
+    df = pl.DataFrame(
+        {
+            'user"\\"\\"\\"col': [1],
+        }
+    )
+
+    _, mapping = generate_stubs(df, 'SpecialEscapeTest', file_path=stub_file)
+
+    content = stub_file.read_text(encoding='utf-8')
+    compile(content, str(stub_file), 'exec')
 
 
 def test_update_existing_class_block(tmp_path: Path):
@@ -105,6 +132,7 @@ def test_update_existing_class_block(tmp_path: Path):
     assert 'new_col' in updated_content
     assert 'old_col' not in updated_content
     assert updated_content.count('# --- START Schema ---') == 1
+    compile(updated_content, str(stub_file), 'exec')
 
 
 def test_append_multiple_classes(tmp_path: Path):
@@ -121,6 +149,7 @@ def test_append_multiple_classes(tmp_path: Path):
     assert '# --- START ClassTwo ---' in content
     assert 'class ClassOne(pl.DataFrame):' in content
     assert 'class ClassTwo(pl.DataFrame):' in content
+    compile(content, str(stub_file), 'exec')
 
 
 def test_lazyframe_support(sample_lazy_df: pl.LazyFrame, tmp_path: Path):
@@ -137,6 +166,16 @@ def test_lazyframe_support(sample_lazy_df: pl.LazyFrame, tmp_path: Path):
         '_123_num',
         '_empty_',
     ]
+
+    content = stub_file.read_text(encoding='utf-8')
+    assert 'class LazyData(pl.LazyFrame):' in content
+    assert 'class LazyDataExprCols:' in content
+    assert 'class LazyDataNameCols:' in content
+    assert 'class LazyDataSeriesCols:' not in content
+    assert 'def x(self) -> LazyDataExprCols:' in content
+    assert 'def n(self) -> LazyDataNameCols:' in content
+    assert 'def s(self)' not in content
+    compile(content, str(stub_file), 'exec')
 
 
 def test_reserved_keywords_sanitization(tmp_path: Path):
@@ -159,3 +198,16 @@ def test_reserved_keywords_sanitization(tmp_path: Path):
     assert mapping['def'] == 'def_'
     assert mapping['FOR'] == 'for_'
     assert renamed_df.columns == ['class_', 'import_', 'def_', 'for_']
+
+
+def test_verbose_flag(tmp_path: Path, capsys):
+    stub_file = tmp_path / 'stubs.py'
+    df = pl.DataFrame({'col a': [1]})
+
+    generate_stubs(df, 'Quiet', file_path=stub_file, verbose=False)
+    captured = capsys.readouterr()
+    assert captured.out == ''
+
+    generate_stubs(df, 'Loud', file_path=stub_file, verbose=True)
+    captured = capsys.readouterr()
+    assert '--- Renamed Columns for Loud ---' in captured.out
